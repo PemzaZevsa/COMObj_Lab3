@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,7 +12,7 @@ namespace DOTNET_Lab3
     public class ExcelDocument : IDisposable
     {
         Excel.Application app = null;
-        Excel.Workbooks workbooks = null;
+        //Excel.Workbooks workbooks = null;
         Excel.Workbook workbook = null;
         Excel.Sheets sheets = null;
         Excel.Worksheet sheet = null;
@@ -21,16 +22,16 @@ namespace DOTNET_Lab3
         public ExcelDocument()
         {
             app = new Excel.Application();
-            workbooks = app.Workbooks;
-            workbook = workbooks.Add();
+            //workbooks = app.Workbooks;
+            //workbook = workbooks.Add();
+            workbook = app.Workbooks.Add();
             sheets = app.Sheets;
             sheet = sheets[1];
         }
         public ExcelDocument(string fileName)
         {
             app = new Excel.Application();
-            workbooks = app.Workbooks;
-            workbook = workbooks.Add();
+            workbook = app.Workbooks.Open(fileName);
             sheets = app.Sheets;
             sheet = sheets[1];
         }
@@ -40,43 +41,49 @@ namespace DOTNET_Lab3
             workbook?.SaveAs(fileName);
         }
 
+        public void AddCell(int row, int col, string text, int fontSize, bool isBold, Excel.XlRgbColor fontColor, Excel.XlHAlign Align)
+        {
+            range = sheet.Cells[row, col];
+            range.Value = text;
+            range.Font.Size = fontSize;
+            range.Font.Bold = isBold;
+            range.Font.Color = fontColor;
+            range.HorizontalAlignment = Align;
+        }
+
+        public void AddMergedCells(int startRow, int startCol, int endRow, int endCol, string text, int fontSize, bool isBold, Excel.XlRgbColor fontColor, Excel.XlHAlign Align)
+        {
+            range = sheet.Range[sheet.Cells[startRow, startCol], sheet.Cells[endRow, endCol]];
+
+            range.Merge();
+
+            range.Value = text;
+            range.Font.Size = fontSize;
+            range.Font.Bold = isBold;
+            range.Font.Color = fontColor;
+            range.HorizontalAlignment = Align;
+        }
         public void Dispose()
         {
             workbook.Close();
             app?.Quit();
-            Release(app);
-            Release(workbooks);
-            Release(workbook);
-            Release(sheets);
-            Release(sheet);
-            Release(range);
+            Release(app); app = null;
+            Release(workbook); workbook = null;
+            Release(sheets); sheets = null;
+            Release(sheet); sheet = null;
+            Release(range); range = null;
 
-            app = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         public string? this[string cellName]
         {
-            get
-            {
-                if (string.IsNullOrEmpty(cellName))
-                    throw new ArgumentNullException(nameof(cellName));
-
-                range = sheet?.Range[cellName];
-                return range?.Value2?.ToString();
-            }
+            get => sheet?.Range[cellName].Value2.ToString();
             set
             {
-                if (string.IsNullOrEmpty(cellName))
-                    throw new ArgumentNullException(nameof(cellName));
-
-                if (sheet == null)
-                    throw new InvalidOperationException("Sheet is not initialized.");
-
-                range = sheet?.Range[cellName];
-                if (range != null)
-                {
-                    range.Value2 = value;
-                }
+                if (sheet is not null)
+                    sheet.Range[cellName].Value2 = value;
             }
         }
 
