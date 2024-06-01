@@ -17,7 +17,7 @@ namespace DOTNET_Lab3
             {
                 LoadCourses(courses);
                 LoadUsers(users);
-                //WordReport(courses, users);
+                WordReport(courses, users);
                 ExcelReport(courses,users);
             }
             catch (Exception)
@@ -27,7 +27,7 @@ namespace DOTNET_Lab3
 
         static public void WordReport(List<Course> courses, List<User> users)
         {
-            string fileName = "WordReport";
+            string fileName = "WordReport2";
             string fullName = $"{Directory.GetCurrentDirectory()}\\{fileName}.docx";
             string str = "";
 
@@ -58,7 +58,7 @@ namespace DOTNET_Lab3
         }
         static public void ExcelReport(List<Course> courses, List<User> users)
         {
-            string fileName = "ExcelReport";
+            string fileName = "ExcelReport2";
             string fullName = $"{Directory.GetCurrentDirectory()}\\{fileName}.xlsx";
             string str = "";
 
